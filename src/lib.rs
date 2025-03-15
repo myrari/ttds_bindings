@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use reqwest::{Client, Method, Request};
-use url::Url;
+use url_builder::URLBuilder;
 
 #[derive(Debug)]
 pub struct Color {
@@ -29,6 +29,23 @@ impl Pane {
     }
 }
 
+pub struct QueryParams {
+    params: HashMap<String, String>
+}
+
+impl QueryParams {
+    pub fn new() -> Self {
+        Self {
+            params: HashMap::new(),
+        }
+    }
+
+    pub fn add_param(mut self, key: impl Into<String>, value: impl Into<String>) -> Self {
+        self.params.insert(key.into(), value.into());
+        self
+    }
+}
+
 pub struct Connection {
     host: String,
     use_tls: bool,
@@ -47,19 +64,17 @@ impl Connection {
         args: &[String], // TODO: Find better name for this
         method: Option<Method>,
         auth: Option<&str>,
-        kw_args: HashMap<String, String>, // TODO: Find better name for this
+        query_params: QueryParams,
     ) -> Result<Request, anyhow::Error> {
         let client = Client::new();
 
-        let mut url = Url::parse(&format!(
-            "{}{}",
-            if self.use_tls { "https://" } else { "http://" },
-            self.host
-        ))?;
+        let scheme = if self.use_tls { "https://" } else { "http://" };
 
-        for arg in args {
-            url = url.join(arg)?;
-        }
+        let mut ub = URLBuilder::new();
+
+        ub.set_host(&self.host);
+        
+        let url = ub.build();
 
         Ok(client.request(method.unwrap_or(Method::POST), url)
             .header("Auth", auth.expect("Expected an authorization key!"))
