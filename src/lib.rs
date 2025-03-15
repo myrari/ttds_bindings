@@ -30,7 +30,7 @@ impl Pane {
 }
 
 pub struct QueryParams {
-    params: HashMap<String, String>
+    params: HashMap<String, String>,
 }
 
 impl QueryParams {
@@ -72,7 +72,16 @@ impl Connection {
 
         let mut ub = URLBuilder::new();
 
+        ub.set_protocol(scheme);
         ub.set_host(&self.host);
+
+        for arg in args {
+            ub.add_route(arg);
+        }
+        
+        for (key, value) in query_params.params {
+            ub.add_param(&key, &value);
+        }
         
         let url = ub.build();
 
