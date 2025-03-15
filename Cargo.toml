@@ -4,6 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+reqwest = "0.12.14"
+url = "2.5.4"
 
 [lib]
 crate-type = ["lib"]
