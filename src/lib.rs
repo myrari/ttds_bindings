@@ -1,5 +1,8 @@
 use std::collections::HashMap;
 
+use reqwest::{Client, Method, Request};
+use url::Url;
+
 #[derive(Debug)]
 pub struct Color {
     pub r: u8,
@@ -39,13 +42,27 @@ impl Connection {
         }
     }
 
-    pub fn request(
+    pub async fn request(
         self,
         args: &[String], // TODO: Find better name for this
-        method: Option<&str>,
+        method: Option<Method>,
         auth: Option<&str>,
         kw_args: HashMap<String, String>, // TODO: Find better name for this
-    ) -> String {
-        todo!()
+    ) -> Result<Request, anyhow::Error> {
+        let client = Client::new();
+
+        let mut url = Url::parse(&format!(
+            "{}{}",
+            if self.use_tls { "https://" } else { "http://" },
+            self.host
+        ))?;
+
+        for arg in args {
+            url = url.join(arg)?;
+        }
+
+        Ok(client.request(method.unwrap_or(Method::POST), url)
+            .header("Auth", auth.expect("Expected an authorization key!"))
+            .build()?)
     }
 }
