@@ -15,11 +15,11 @@ pub struct Pane {
 
 impl Pane {
     pub fn get_token(&self) -> Result<String, String> {
-        return match &self.token {
+        match &self.token {
             Some(token) => Ok(token.clone()),
             None => Err(String::from(
                 "Token not yet initialized! Did you succesfully open a connection?",
             )),
-        };
+        }
     }
 }
